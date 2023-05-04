@@ -223,6 +223,21 @@ bom {
 			]
 		}
 	}
+	library("Debezium", "2.2.0.Final") {
+		group("io.debezium") {
+			modules = [
+				"debezium-embedded",
+				"debezium-connector-mysql",
+				"debezium-connector-mongodb",
+				"debezium-connector-postgres",
+				"debezium-connector-oracle",
+				"debezium-connector-sqlserver",
+				"debezium-connector-db2",
+				"debezium-connector-vitess",
+				"debezium-connector-spanner"
+			]
+		}
+	}
 	library("Dependency Management Plugin", "1.1.0") {
 		group("io.spring.gradle") {
 			modules = [
