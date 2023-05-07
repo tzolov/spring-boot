@@ -41,13 +41,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- *
  * @author Christian Tzolov
  */
 @SpringBootConfiguration
-@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, CacheAutoConfiguration.class,
-		FlywayAutoConfiguration.class, CassandraDataAutoConfiguration.class,
-		CassandraReactiveDataAutoConfiguration.class })
+@EnableAutoConfiguration(
+		exclude = { DataSourceAutoConfiguration.class, CacheAutoConfiguration.class, FlywayAutoConfiguration.class,
+				CassandraDataAutoConfiguration.class, CassandraReactiveDataAutoConfiguration.class })
 public class DebeziumTestApplication {
 
 	@Bean
@@ -65,9 +64,9 @@ public class DebeziumTestApplication {
 	@Bean
 	public HikariDataSource dataSource(DataSourceProperties dataSourceProperties) {
 		return dataSourceProperties.initializeDataSourceBuilder()
-				.type(HikariDataSource.class)
-				.driverClassName("com.mysql.cj.jdbc.Driver")
-				.build();
+			.type(HikariDataSource.class)
+			.driverClassName("com.mysql.cj.jdbc.Driver")
+			.build();
 	}
 
 	@Bean
@@ -93,5 +92,7 @@ public class DebeziumTestApplication {
 				System.out.println("[Debezium Event]: " + changeEvent.toString());
 			}
 		}
+
 	}
+
 }

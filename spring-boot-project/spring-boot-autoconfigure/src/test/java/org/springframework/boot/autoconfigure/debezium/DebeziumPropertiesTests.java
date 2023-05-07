@@ -30,37 +30,31 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DebeziumPropertiesTests {
 
-    DebeziumProperties properties = new DebeziumProperties();
+	DebeziumProperties properties = new DebeziumProperties();
 
-    @Test
-    public void defaultPropertiesTest() {
-        assertThat(this.properties.getFormat()).isEqualTo(DebeziumFormat.JSON);
-        assertThat(this.properties.isCopyHeaders()).isEqualTo(true);
-        assertThat(this.properties.getOffsetCommitPolicy()).isEqualTo(DebeziumOffsetCommitPolicy.DEFAULT);
-        assertThat(this.properties.isExecutionServiceEnabled()).isEqualTo(true);
-        assertThat(this.properties.getProperties()).isNotNull();
-        assertThat(this.properties.getProperties()).isEmpty();
-    }
+	@Test
+	public void defaultPropertiesTest() {
+		assertThat(this.properties.getFormat()).isEqualTo(DebeziumFormat.JSON);
+		assertThat(this.properties.isCopyHeaders()).isEqualTo(true);
+		assertThat(this.properties.getOffsetCommitPolicy()).isEqualTo(DebeziumOffsetCommitPolicy.DEFAULT);
+		assertThat(this.properties.isExecutionServiceEnabled()).isEqualTo(true);
+		assertThat(this.properties.getProperties()).isNotNull();
+		assertThat(this.properties.getProperties()).isEmpty();
+	}
 
-    @Test
-    public void debeziumFormatTest() {
-        this.properties.setFormat(DebeziumFormat.AVRO);
-        assertThat(this.properties.getFormat()).isEqualTo(DebeziumFormat.AVRO);
-        assertThat(this.properties.getFormat().serializationFormat())
-                .isEqualTo(io.debezium.engine.format.Avro.class);
-        assertThat(this.properties.getFormat().contentType()).isEqualTo("application/avro");
+	@Test
+	public void debeziumFormatTest() {
+		this.properties.setFormat(DebeziumFormat.AVRO);
+		assertThat(this.properties.getFormat()).isEqualTo(DebeziumFormat.AVRO);
+		assertThat(this.properties.getContentType()).isEqualTo("application/avro");
 
-        this.properties.setFormat(DebeziumFormat.JSON);
-        assertThat(this.properties.getFormat()).isEqualTo(DebeziumFormat.JSON);
-        assertThat(this.properties.getFormat().serializationFormat())
-                .isEqualTo(io.debezium.engine.format.JsonByteArray.class);
-        assertThat(this.properties.getFormat().contentType()).isEqualTo("application/json");
+		this.properties.setFormat(DebeziumFormat.JSON);
+		assertThat(this.properties.getFormat()).isEqualTo(DebeziumFormat.JSON);
+		assertThat(this.properties.getContentType()).isEqualTo("application/json");
 
-        this.properties.setFormat(DebeziumFormat.PROTOBUF);
-        assertThat(this.properties.getFormat()).isEqualTo(DebeziumFormat.PROTOBUF);
-        assertThat(this.properties.getFormat().serializationFormat())
-                .isEqualTo(io.debezium.engine.format.Protobuf.class);
-        assertThat(this.properties.getFormat().contentType()).isEqualTo("application/x-protobuf");
-    }
+		this.properties.setFormat(DebeziumFormat.PROTOBUF);
+		assertThat(this.properties.getFormat()).isEqualTo(DebeziumFormat.PROTOBUF);
+		assertThat(this.properties.getContentType()).isEqualTo("application/x-protobuf");
+	}
 
 }

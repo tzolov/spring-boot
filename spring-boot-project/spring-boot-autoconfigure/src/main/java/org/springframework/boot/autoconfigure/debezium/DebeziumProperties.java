@@ -29,6 +29,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class DebeziumProperties {
 
 	public enum DebeziumFormat {
+
 		/**
 		 * JSON change event format.
 		 */
@@ -41,11 +42,12 @@ public class DebeziumProperties {
 		 * ProtoBuf change event format.
 		 */
 		PROTOBUF
+
 	};
 
 	/**
-	 * Spring pass-trough wrapper for debezium configuration properties. All properties with a
-	 * 'spring.debezium.properties.*' prefix are native Debezium properties.
+	 * Spring pass-trough wrapper for debezium configuration properties. All properties
+	 * with a 'spring.debezium.properties.*' prefix are native Debezium properties.
 	 */
 	private Map<String, String> properties = new HashMap<>();
 
@@ -64,6 +66,9 @@ public class DebeziumProperties {
 	 */
 	private DebeziumOffsetCommitPolicy offsetCommitPolicy = DebeziumOffsetCommitPolicy.DEFAULT;
 
+	/**
+	 * Use the default Debezium execution service.
+	 */
 	private boolean executionServiceEnabled = true;
 
 	public Map<String, String> getProperties() {
@@ -87,21 +92,25 @@ public class DebeziumProperties {
 	}
 
 	public enum DebeziumOffsetCommitPolicy {
+
 		/**
-		 * Commits offsets as frequently as possible. This may result in reduced performance, but it has the least
-		 * potential for seeing source records more than once upon restart.
+		 * Commits offsets as frequently as possible. This may result in reduced
+		 * performance, but it has the least potential for seeing source records more than
+		 * once upon restart.
 		 */
 		ALWAYS,
 		/**
-		 * Commits offsets no more than the specified time period. If the specified time is less than {@code 0} then the
-		 * policy will behave as ALWAYS policy. Requires the 'spring.debezium.properties.offset.flush.interval.ms'
-		 * native property to be set.
+		 * Commits offsets no more than the specified time period. If the specified time
+		 * is less than {@code 0} then the policy will behave as ALWAYS policy. Requires
+		 * the 'spring.debezium.properties.offset.flush.interval.ms' native property to be
+		 * set.
 		 */
 		PERIODIC,
 		/**
 		 * Uses the default Debezium engine policy (PERIODIC).
 		 */
 		DEFAULT;
+
 	}
 
 	public DebeziumOffsetCommitPolicy getOffsetCommitPolicy() {
@@ -113,7 +122,8 @@ public class DebeziumProperties {
 	}
 
 	/**
-	 * Converts the Spring Framework "spring.debezium.properties.*" properties into native Debezium configuration.
+	 * Converts the Spring Framework "spring.debezium.properties.*" properties into native
+	 * Debezium configuration.
 	 */
 	public Properties getDebeziumNativeConfiguration() {
 		Properties outProps = new java.util.Properties();
@@ -129,12 +139,17 @@ public class DebeziumProperties {
 		this.executionServiceEnabled = executionServiceEnabled;
 	}
 
-	public final String getContentTypeFor() {
+	public final String getContentType() {
 		switch (this.format) {
-			case JSON: return "application/json";
-			case AVRO: return "application/avro";
-			case PROTOBUF: return "application/x-protobuf";
-			default: throw new IllegalStateException("Unknown Debezium format: " + format);
+			case JSON:
+				return "application/json";
+			case AVRO:
+				return "application/avro";
+			case PROTOBUF:
+				return "application/x-protobuf";
+			default:
+				throw new IllegalStateException("Unknown Debezium format: " + format);
 		}
 	}
+
 }

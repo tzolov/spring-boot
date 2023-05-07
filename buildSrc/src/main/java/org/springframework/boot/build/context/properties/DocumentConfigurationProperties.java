@@ -68,6 +68,7 @@ public class DocumentConfigurationProperties extends DefaultTask {
 		snippets.add("application-properties.cache", "Cache Properties", this::cachePrefixes);
 		snippets.add("application-properties.mail", "Mail Properties", this::mailPrefixes);
 		snippets.add("application-properties.json", "JSON Properties", this::jsonPrefixes);
+		snippets.add("application-properties.debezium", "Debezium Properties", this::debeziumPrefixes);
 		snippets.add("application-properties.data", "Data Properties", this::dataPrefixes);
 		snippets.add("application-properties.transaction", "Transaction Properties", this::transactionPrefixes);
 		snippets.add("application-properties.data-migration", "Data Migration Properties", this::dataMigrationPrefixes);
@@ -122,6 +123,10 @@ public class DocumentConfigurationProperties extends DefaultTask {
 	private void jsonPrefixes(Config config) {
 		config.accept("spring.jackson");
 		config.accept("spring.gson");
+	}
+
+	private void debeziumPrefixes(Config config) {
+		config.accept("spring.debezium");
 	}
 
 	private void dataPrefixes(Config config) {

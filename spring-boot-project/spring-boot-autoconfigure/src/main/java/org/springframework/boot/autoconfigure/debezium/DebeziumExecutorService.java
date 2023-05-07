@@ -28,11 +28,13 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.SmartLifecycle;
 
 /**
- * The Debezium Engine is designed to be submitted to an {@link Executor} or {@link ExecutorService} for execution by a
- * single thread, and a running connector can be stopped either by calling {@link #stop()} from another thread or by
- * interrupting the running thread (e.g., as is the case with {@link ExecutorService#shutdownNow()}).
+ * The Debezium Engine is designed to be submitted to an {@link Executor} or
+ * {@link ExecutorService} for execution by a single thread, and a running connector can
+ * be stopped either by calling {@link #stop()} from another thread or by interrupting the
+ * running thread (e.g., as is the case with {@link ExecutorService#shutdownNow()}).
  *
- * The EmbeddedEngineExecutorService provides a sample ExecutorService implementation aligned with the Spring lifecycle.
+ * The EmbeddedEngineExecutorService provides a sample ExecutorService implementation
+ * aligned with the Spring lifecycle.
  *
  * @author Christian Tzolov
  */
@@ -41,7 +43,9 @@ public class DebeziumExecutorService implements SmartLifecycle, AutoCloseable {
 	private static final Log logger = LogFactory.getLog(DebeziumExecutorService.class);
 
 	private final DebeziumEngine<?> engine;
+
 	private final ExecutorService executor;
+
 	private final AtomicBoolean running = new AtomicBoolean(false);
 
 	public DebeziumExecutorService(DebeziumEngine<?> engine) {
@@ -78,4 +82,5 @@ public class DebeziumExecutorService implements SmartLifecycle, AutoCloseable {
 	public boolean isRunning() {
 		return this.running.get();
 	}
+
 }

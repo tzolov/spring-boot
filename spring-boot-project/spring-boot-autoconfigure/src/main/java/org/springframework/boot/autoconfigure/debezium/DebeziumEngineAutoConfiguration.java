@@ -30,57 +30,70 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.debezium.DebeziumProperties.DebeziumFormat;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 /**
  * DebeziumEngine auto-configuration.
  *
- * The engine configuration is entirely standalone and only talks with the source system; Applications using the engine
- * auto-configuration simply provides a {@link Consumer consumer function} implementation to which the engine will pass
- * all records containing database change events.
+ * The engine configuration is entirely standalone and only talks with the source system;
+ * Applications using the engine auto-configuration simply provides a {@link Consumer
+ * consumer function} implementation to which the engine will pass all records containing
+ * database change events.
  * <p>
- * With the engine, the application that runs the connector assumes all responsibility for fault tolerance, scalability,
- * and durability. Additionally, applications must specify how the engine can store its relational database schema
- * history and offsets. By default, this information will be stored in memory and will thus be lost upon application
- * restart.
+ * With the engine, the application that runs the connector assumes all responsibility for
+ * fault tolerance, scalability, and durability. Additionally, applications must specify
+ * how the engine can store its relational database schema history and offsets. By
+ * default, this information will be stored in memory and will thus be lost upon
+ * application restart.
+ *
+ * Activated only if the <code>spring.debezium.properties.connector.class</code> property
+ * is set and at least one Debezium connector is available on the classpath.
  *
  * @author Christian Tzolov
  */
 @AutoConfiguration
 @EnableConfigurationProperties(DebeziumProperties.class)
+@Conditional(DebeziumEngineAutoConfiguration.OnDebeziumConnectorCondition.class)
+@ConditionalOnProperty(prefix = "spring.debezium", name = "properties.connector.class")
 public class DebeziumEngineAutoConfiguration {
 
 	private static final Log logger = LogFactory.getLog(DebeziumEngineAutoConfiguration.class);
 
 	/**
-	 * The fully-qualified class name of the commit policy type. The default is a periodic commit policy based upon time
-	 * intervals.
-	 *
-	 * @param properties The 'debezium.properties.offset.flush.interval.ms' configuration is compulsory for the Periodic
-	 * policy type. The ALWAYS and DEFAULT doesn't require properties.
+	 * The fully-qualified class name of the commit policy type. The default is a periodic
+	 * commit policy based upon time intervals.
+	 * @param properties The 'debezium.properties.offset.flush.interval.ms' configuration
+	 * is compulsory for the Periodic policy type. The ALWAYS and DEFAULT doesn't require
+	 * properties.
 	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public OffsetCommitPolicy offsetCommitPolicy(DebeziumProperties properties) {
 
 		switch (properties.getOffsetCommitPolicy()) {
-		case PERIODIC:
-			return OffsetCommitPolicy.periodic(properties.getDebeziumNativeConfiguration());
-		case ALWAYS:
-			return OffsetCommitPolicy.always();
-		case DEFAULT:
-		default:
-			return NULL_OFFSET_COMMIT_POLICY;
+			case PERIODIC:
+				return OffsetCommitPolicy.periodic(properties.getDebeziumNativeConfiguration());
+			case ALWAYS:
+				return OffsetCommitPolicy.always();
+			case DEFAULT:
+			default:
+				return NULL_OFFSET_COMMIT_POLICY;
 		}
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	@ConditionalOnProperty(prefix = "spring.debezium", name = "executionServiceEnabled", havingValue = "true", matchIfMissing = true)
+	@ConditionalOnProperty(prefix = "spring.debezium", name = "executionServiceEnabled", havingValue = "true",
+			matchIfMissing = true)
 	public DebeziumExecutorService embeddedEngine(
 			DebeziumEngine.Builder<ChangeEvent<byte[], byte[]>> debeziumEngineBuilder) {
 		return new DebeziumExecutorService(debeziumEngineBuilder.build());
@@ -98,9 +111,9 @@ public class DebeziumEngineAutoConfiguration {
 	}
 
 	/**
-	 * Use the specified clock when needing to determine the current time. Defaults to {@link Clock#systemDefaultZone()
-	 * system clock}, but you can override the Bean in your configuration with you {@link Clock implementation}. Returns
-	 *
+	 * Use the specified clock when needing to determine the current time. Defaults to
+	 * {@link Clock#systemDefaultZone() system clock}, but you can override the Bean in
+	 * your configuration with you {@link Clock implementation}. Returns
 	 * @return Clock for the system default zone.
 	 */
 	@Bean
@@ -110,10 +123,10 @@ public class DebeziumEngineAutoConfiguration {
 	}
 
 	/**
-	 * When the engine's {@link DebeziumEngine#run()} method completes, call the supplied function with the results.
-	 *
-	 * @return Default completion callback that logs the completion status. The bean can be overridden in custom
-	 * implementation.
+	 * When the engine's {@link DebeziumEngine#run()} method completes, call the supplied
+	 * function with the results.
+	 * @return Default completion callback that logs the completion status. The bean can
+	 * be overridden in custom implementation.
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -122,8 +135,9 @@ public class DebeziumEngineAutoConfiguration {
 	}
 
 	/**
-	 * During the engine run, provides feedback about the different stages according to the completion state of each
-	 * component running within the engine (connectors, tasks etc). The bean can be overridden in custom implementation.
+	 * During the engine run, provides feedback about the different stages according to
+	 * the completion state of each component running within the engine (connectors, tasks
+	 * etc). The bean can be overridden in custom implementation.
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -133,18 +147,17 @@ public class DebeziumEngineAutoConfiguration {
 
 	@Bean
 	public DebeziumEngine.Builder<ChangeEvent<byte[], byte[]>> debeziumEngineBuilder(
-			Consumer<ChangeEvent<byte[], byte[]>> changeEventConsumer,
-			OffsetCommitPolicy offsetCommitPolicy, CompletionCallback completionCallback,
-			ConnectorCallback connectorCallback, DebeziumProperties properties, Clock debeziumClock) {
+			Consumer<ChangeEvent<byte[], byte[]>> changeEventConsumer, OffsetCommitPolicy offsetCommitPolicy,
+			CompletionCallback completionCallback, ConnectorCallback connectorCallback, DebeziumProperties properties,
+			Clock debeziumClock) {
 
-		return DebeziumEngine
-				.create(this.serializationFormat(properties.getFormat()))
-				.using(properties.getDebeziumNativeConfiguration())
-				.using(debeziumClock)
-				.using(completionCallback)
-				.using(connectorCallback)
-				.using((offsetCommitPolicy != NULL_OFFSET_COMMIT_POLICY) ? offsetCommitPolicy : null)
-				.notifying(changeEventConsumer);
+		return DebeziumEngine.create(this.serializationFormat(properties.getFormat()))
+			.using(properties.getDebeziumNativeConfiguration())
+			.using(debeziumClock)
+			.using(completionCallback)
+			.using(connectorCallback)
+			.using((offsetCommitPolicy != NULL_OFFSET_COMMIT_POLICY) ? offsetCommitPolicy : null)
+			.notifying(changeEventConsumer);
 	}
 
 	/**
@@ -154,14 +167,14 @@ public class DebeziumEngineAutoConfiguration {
 	 */
 	private Class<? extends SerializationFormat<byte[]>> serializationFormat(DebeziumFormat format) {
 		switch (format) {
-		case JSON:
-			return io.debezium.engine.format.JsonByteArray.class;
-		case AVRO:
-			return io.debezium.engine.format.Avro.class;
-		case PROTOBUF:
-			return io.debezium.engine.format.Protobuf.class;
-		default:
-			throw new IllegalStateException("Unknown Debezium format: " + format);
+			case JSON:
+				return io.debezium.engine.format.JsonByteArray.class;
+			case AVRO:
+				return io.debezium.engine.format.Avro.class;
+			case PROTOBUF:
+				return io.debezium.engine.format.Protobuf.class;
+			default:
+				throw new IllegalStateException("Unknown Debezium format: " + format);
 		}
 	}
 
@@ -171,15 +184,14 @@ public class DebeziumEngineAutoConfiguration {
 	private static final CompletionCallback DEFAULT_COMPLETION_CALLBACK = new CompletionCallback() {
 		@Override
 		public void handle(boolean success, String message, Throwable error) {
-			logger.warn(
-					String.format("[DEFAULT HANDLER] Debezium Engine handle with success:%s, message:%s ", success,
-							message),
-					error);
+			logger.warn(String.format("[DEFAULT HANDLER] Debezium Engine handle with success:%s, message:%s ", success,
+					message), error);
 		}
 	};
 
 	/**
-	 * Callback function which informs users about the various stages a connector goes through during startup.
+	 * Callback function which informs users about the various stages a connector goes
+	 * through during startup.
 	 */
 	private static final ConnectorCallback DEFAULT_CONNECTOR_CALLBACK = new ConnectorCallback() {
 
@@ -222,4 +234,58 @@ public class DebeziumEngineAutoConfiguration {
 			throw new UnsupportedOperationException("Unimplemented method 'performCommit'");
 		}
 	};
+
+	/**
+	 * Determine if Debezium connector is available. This either kicks in if any debezium
+	 * connector is available.
+	 */
+	@Order(Ordered.LOWEST_PRECEDENCE)
+	static class OnDebeziumConnectorCondition extends AnyNestedCondition {
+
+		OnDebeziumConnectorCondition() {
+			super(ConfigurationPhase.REGISTER_BEAN);
+		}
+
+		@ConditionalOnClass(name = { "io.debezium.connector.mysql.MySqlConnector" })
+		static class HasMySqlConnector {
+
+		}
+
+		@ConditionalOnClass(name = "io.debezium.connector.postgresql.PostgresConnector")
+		static class HasPostgreSqlConnector {
+
+		}
+
+		@ConditionalOnClass(name = "io.debezium.connector.db2.Db2Connector")
+		static class HasDb2Connector {
+
+		}
+
+		@ConditionalOnClass(name = "io.debezium.connector.oracle.OracleConnector")
+		static class HasOracleConnector {
+
+		}
+
+		@ConditionalOnClass(name = "io.debezium.connector.sqlserver.SqlServerConnector")
+		static class HasSqlServerConnector {
+
+		}
+
+		@ConditionalOnClass(name = "io.debezium.connector.mongodb.MongoDbConnector")
+		static class HasMongoDbConnector {
+
+		}
+
+		@ConditionalOnClass(name = "io.debezium.connector.vitess.VitessConnector")
+		static class HasVitessConnector {
+
+		}
+
+		@ConditionalOnClass(name = "io.debezium.connector.spanner.SpannerConnector")
+		static class HasSpannerConnector {
+
+		}
+
+	}
+
 }
