@@ -42,12 +42,28 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
 /**
- * DebeziumEngine auto-configuration.
+ * {@link EnableAutoConfiguration Auto-configuration} for Debezium embedded Engine.
  *
- * The engine configuration is entirely standalone and only talks with the source system;
- * Applications using the engine auto-configuration simply provides a {@link Consumer
+ * The engine configuration is standalone and only talks with the source data system;
+ *
+ * Applications using the engine auto-configuration should provides a {@link Consumer
  * consumer function} implementation to which the engine will pass all records containing
  * database change events.
+ *
+ * <pre>
+ *  {@code
+ * &#64;Bean
+ * public Consumer<ChangeEvent<byte[], byte[]>> changeEventConsumer() {
+ * 	return new Consumer<ChangeEvent<byte[], byte[]>>() {
+ * 		&#64;Override
+ * 		public void accept(ChangeEvent<byte[], byte[]> changeEvent) {
+ * 			// Your code
+ * 		}
+ * 	};
+ * }
+ * }
+ * </pre>
+ *
  * <p>
  * With the engine, the application that runs the connector assumes all responsibility for
  * fault tolerance, scalability, and durability. Additionally, applications must specify
@@ -55,10 +71,24 @@ import org.springframework.core.annotation.Order;
  * default, this information will be stored in memory and will thus be lost upon
  * application restart.
  *
- * Activated only if the <code>spring.debezium.properties.connector.class</code> property
- * is set and at least one Debezium connector is available on the classpath.
+ * The {@link DebeziumEngine.Builder} is activated only if a Debezium connector is
+ * provided on the classpath and the
+ * <code> spring.debezium.properties.connector.class</code>
+ *
+ * property is set.
+ *
+ * The Debezium Engine is designed to be submitted to an {@link Executor} or
+ * {@link ExecutorService} for execution by a single thread.
+ *
+ * The Debezium auto-configuration provides a default {@DebeziumExecutorService} that can
+ * be disabled and overridden with
+ * <code>spring.debezium.executionServiceEnabled=false</code> property.
+ *
+ * All properties with prefix <code>spring.debezium.properties</code> are passed through
+ * as native Debezium properties.
  *
  * @author Christian Tzolov
+ * @since 3.1.0
  */
 @AutoConfiguration
 @EnableConfigurationProperties(DebeziumProperties.class)
@@ -102,10 +132,12 @@ public class DebeziumEngineAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public Consumer<ChangeEvent<byte[], byte[]>> changeEventConsumer() {
+		logger.warn("Default, dummy Debezium consumer! \n"
+				+ "You should provide your own Consumer<ChangeEvent<byte[], byte[]>> implementation bean instead!");
 		return new Consumer<ChangeEvent<byte[], byte[]>>() {
 			@Override
 			public void accept(ChangeEvent<byte[], byte[]> changeEvent) {
-				logger.info("change event:" + changeEvent);
+				logger.info("Change event:" + changeEvent);
 			}
 		};
 	}

@@ -37,6 +37,7 @@ import org.springframework.context.SmartLifecycle;
  * aligned with the Spring lifecycle.
  *
  * @author Christian Tzolov
+ * @since 3.1.0
  */
 public class DebeziumExecutorService implements SmartLifecycle, AutoCloseable {
 

@@ -16,5 +16,6 @@
 
 /**
  * Auto-configuration for Debezium.
+ * @since 3.1.0
  */
 package org.springframework.boot.autoconfigure.debezium;

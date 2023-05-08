@@ -24,6 +24,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Christian Tzolov
+ * @since 3.1.0
  */
 @ConfigurationProperties("spring.debezium")
 public class DebeziumProperties {
